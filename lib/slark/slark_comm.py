@@ -9,7 +9,8 @@ import threading
 VERSION = "0.1"
 
 class SlarkComm:
-	def __init__(self, api_token):
+	def __init__(self, api_token, args=None):
+		self.ws_only = args.ws
 		self.token = api_token
 		self.ua = self.user_agent()
 		self.ws_url = ''
@@ -28,8 +29,11 @@ class SlarkComm:
 			on_close=self.on_close,
 			on_open=self.on_open)
 
-		thread = threading.Thread(target=self.ws_run, daemon=True)
-		thread.start()
+		if self.ws_only == True:
+			self.ws_run()
+		else:
+			thread = threading.Thread(target=self.ws_run, daemon=True)
+			thread.start()
 
 	def ws_run(self):
 		try:
@@ -39,20 +43,27 @@ class SlarkComm:
 
 	def send_message(self, msg):
 		# send an arbitrary WS message! yahoo! the caller needs to format it
+		# can't do this with ws_only because then WHY WOULD I BE BUILDING A UI
 		self.ws.send(msg)
 
 	def on_message(self, ws, message):
 		# receive an arbitrary WS message! yahoo! update the UI!
-		self.signals.emit(self.signals, 'on-msg', message)
+		if self.ws_only == True:
+			print(message)
+		else:
+			self.signals.emit(self.signals, 'on-msg', message)
 
 	def on_error(self, ws, error):
-		pass
+		if self.ws_only:
+			print('Error! '+error)
 
 	def on_close(self, ws):
-		pass
+		if self.ws_only:
+			print('Disconnected from websocket.')
 
 	def on_open(self, ws):
-		pass
+		if self.ws_only == True:
+			print('Connected to websocket!')
 
 
 	def api_call(self, method, **args):

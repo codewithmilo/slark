@@ -7,13 +7,13 @@ from lib.slark.slark_client import SlarkClient
 
 
 class Slark:
-	def __init__(self):
+	def __init__(self, args=None):
 		self.api_token = os.environ["SLACK_API_TOKEN"]
 		self.MSG_HISTORY_LIMIT = 30
-		self.client = SlarkClient()				# prep all the methods for handling the data we get
-		self.comm = SlarkComm(self.api_token)	# setup a WS & API client
-		self.boot = self.rtm_start()			# get all the boot data from an rtm.start call
-		self.view = self.get_channel()			# the current channel in view, and its history. TODO have this accept a stored "last channel"
+		self.client = SlarkClient()					# prep all the methods for handling the data we get
+		self.comm = SlarkComm(self.api_token, args)	# setup a WS & API client
+		self.boot = self.rtm_start()				# get all the boot data from an rtm.start call
+		self.view = self.get_channel()				# the current channel in view, and its history. TODO have this accept a stored "last channel"
 
 	def rtm_start(self):
 		reply = self.comm.api_call('rtm.start', simple_latest=True)

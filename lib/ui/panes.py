@@ -130,19 +130,35 @@ class Panes:
 	def handleMsg(self, msg):
 		# handle new messages! woohoo!
 		message = json.loads(msg)
+		msg_type = message.get('type', 'none')
+
+		def update_new_msg_in_view(message, author):
+			# author may come from our local model or the message object
+			ts = datetime.datetime.fromtimestamp(float(message['ts']))
+			time = ts.strftime('%H:%M')
+			message = urwid.Text(message['text'])
+			metadata = urwid.Text(('metadata', author+' @ '+time))
+			self.add_new_msg(metadata, message)
 
 		# this is _probably_ the best way to do this?
 		# if we just sent a message, we get a weird response about it so use that
 		if self.msg_sent == True and message.get('ok') == True:
 			# current time and user for metadata!
-			ts = datetime.datetime.fromtimestamp(float(message['ts']))
-			time = ts.strftime('%H:%M')
-			message = urwid.Text(message['text'])
 			author = self.slark.boot['self']['name']
-			metadata = urwid.Text(('metadata', author+' @ '+time))
-
-			self.add_new_msg(metadata, message)
+			update_new_msg_in_view(message, author)
 			self.msg_sent = False
+
+		# got a new message from someone else (or at least from a different client)
+		if msg_type == 'message':
+			# update the current view with the new message, if we are viewing that channel
+			if message.get('channel') == self.slark.view['channel']['id']:
+				# TODO there is a bug here, it doesn't seem to work if focus is in the msg pane...should fix that eventually!
+				user_id = message.get('user', 'someone')
+				if user_id != 'someone':
+					author = self.slark.boot['user_list'][user_id]
+				else:
+					author = user_id
+				update_new_msg_in_view(message, author)
 
 		# tell the main ui to redraw!
 		urwid.emit_signal(self.msg, 'redraw-msg')
@@ -159,7 +175,6 @@ class Panes:
 
 		self.msg.contents['body'][0].body = urwid.SimpleFocusListWalker(body)
 		self.msg.contents['body'][0].set_focus(msg_rows-1)
-		self.msg.set_focus('body')
 
 class ChannelItem(urwid.Button):
 	def __init__(self, label, on_press, user_data):
