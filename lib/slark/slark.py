@@ -1,7 +1,7 @@
 import os
 import json
-from slark_comm import SlarkComm
-from slark_client import SlarkClient
+from lib.slark.slark_comm import SlarkComm
+from lib.slark.slark_client import SlarkClient
 
 # i stole this from a client, this should be gotten through the oauth flow
 
@@ -20,7 +20,7 @@ class Slark:
 
 		if reply['ok']:
 			self.comm.set_ws_url(reply['url'])
-			# actually connect to WS later
+			self.comm.ws_connect()
 		else:
 			raise Exception(reply.error)
 
@@ -72,4 +72,16 @@ class Slark:
 
 	def get_channel_by_id(self, chan_id):
 		return [ch for ch in self.boot['channel_list'] if ch['id'] == chan_id][0]
+
+	def send_msg(self, text):
+		# format and pass it along to the comm to send it through the WS
+		# tbh, it's probably better to send a message through the API...
+		# but I didn't work on making callbacks fast to NOT use this soooo ¯\_(ツ)_/¯
+		msg = {
+			'type': 'message',
+			'channel': self.view['channel']['id'],
+			'user': self.boot['self']['id'],
+			'text': text
+		}
+		self.comm.send_message(json.dumps(msg))
 

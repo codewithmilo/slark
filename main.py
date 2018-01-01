@@ -1,4 +1,4 @@
-from lib.ui.ui import *
+from lib.ui.ui import load_ui
 from lib.slark.slark import Slark
 
 slark = Slark()

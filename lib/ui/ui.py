@@ -1,5 +1,5 @@
-import urwid
 import json
+import urwid
 from lib.ui.panes import Panes
 
 def load_ui(slark):
@@ -14,9 +14,9 @@ def load_ui(slark):
 	main_pane = Panes(slark)
 	main = MainUI([
 		('weight', 1, main_pane.ch),
-		('weight', 3, main_pane.msg)])
+		('weight', 3, main_pane.msg)], 1)
 	loop = urwid.MainLoop(main, palette)
-
+	urwid.connect_signal(loop.widget.contents[1][0], 'redraw-msg', loop.draw_screen)
 	loop.run()
 
 class MainUI(urwid.Columns):
@@ -25,4 +25,7 @@ class MainUI(urwid.Columns):
 			self.set_focus_column(0)
 		if key == 'esc':
 			raise urwid.ExitMainLoop()
+		if key == 'q':
+			print(self.focus, self.focus.focus)
+			return
 		super(MainUI, self).keypress(size, key)

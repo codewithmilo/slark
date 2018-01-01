@@ -1,6 +1,7 @@
+import re
+import json
 import urwid
 import datetime
-import re
 from lib.ui.msg_input import MsgInput
 from lib.ui.msg_pane import MsgPane
 
@@ -9,6 +10,13 @@ class Panes:
 		self.slark = slark
 		self.msg = self.msg_pane()
 		self.ch = self.channel_pane()
+
+		# if we just sent a message. used for catching the WS message coming back
+		self.msg_sent = False
+		# abuse the shit out of urwid's signals to get WS messages up in here
+		self.slark.comm.signals.connect(self.slark.comm.signals, 'on-msg', self.handleMsg)
+		# these are sent to the mainUI so it will update from WS msg handling
+		urwid.register_signal(self.msg.__class__, ['redraw-msg', 'redraw-ch'])
 
 	def channel_pane(self):
 		head_title = urwid.Text(('banner', u'\nChannels\n'), align='center')
@@ -48,7 +56,7 @@ class Panes:
 
 		# connect keyboard navigation signals to change focus
 		urwid.connect_signal(msg_input.original_widget, 'move-focus', self.navigate)
-		urwid.connect_signal(msg_input.original_widget, 'send-msg', self.update_msg_pane)
+		urwid.connect_signal(msg_input.original_widget, 'send-msg', self.send_msg)
 		msg_box = urwid.Pile([urwid.Divider(), input_div, msg_input, input_div])
 
 		return urwid.Frame(msg_list, header, msg_box, focus_part='footer')
@@ -119,14 +127,32 @@ class Panes:
 		self.msg.contents['body'][0].set_focus(focus_pos)
 		self.msg.contents['body'][0].set_focus_valign('top')
 
-	def update_msg_pane(self, text):
-		body = self.msg.contents['body'][0].body
+	def handleMsg(self, msg):
+		# handle new messages! woohoo!
+		message = json.loads(msg)
 
-		# current time and user for metadata!
-		ts = datetime.datetime.now().strftime('%H:%M')
-		message = urwid.Text(text)
-		author = self.slark.boot['self']['name']
-		metadata = urwid.Text(('metadata', author+' @ '+ts))
+		# this is _probably_ the best way to do this?
+		# if we just sent a message, we get a weird response about it so use that
+		if self.msg_sent == True and message.get('ok') == True:
+			# current time and user for metadata!
+			ts = datetime.datetime.fromtimestamp(float(message['ts']))
+			time = ts.strftime('%H:%M')
+			message = urwid.Text(message['text'])
+			author = self.slark.boot['self']['name']
+			metadata = urwid.Text(('metadata', author+' @ '+time))
+
+			self.add_new_msg(metadata, message)
+			self.msg_sent = False
+
+		# tell the main ui to redraw!
+		urwid.emit_signal(self.msg, 'redraw-msg')
+
+	def send_msg(self, text):
+		self.msg_sent = True
+		self.slark.send_msg(text)
+
+	def add_new_msg(self, metadata, message):
+		body = self.msg.contents['body'][0].body
 
 		body = body + [urwid.Divider(), metadata, message]
 		msg_rows = len(body)

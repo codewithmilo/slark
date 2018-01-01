@@ -64,7 +64,7 @@ class SlarkClient():
 			group['members'] = len(g.get('members', '0'))
 			group['priority'] = g.get('priority', '0')
 			group['unreads'] = g.get('unread_count', '0')
-			group['is_member'] = g['is_member']
+			group['is_member'] = True
 			group['is_archived'] = g['is_archived']
 
 			if g['is_mpim']:
