@@ -2,6 +2,7 @@ import re
 import json
 import urwid
 import datetime
+import threading
 from lib.ui.msg_input import MsgInput
 from lib.ui.msg_pane import MsgPane
 
@@ -86,8 +87,12 @@ class Panes:
 		urwid.connect_signal(msg_pane, 'more-history', self.fetchMoreHistory)
 
 	def switchChannels(self, button, new_chan_id):
-		# update slark.view, then update the header and msg pane
+		# update slark.view, kick off a thread to update the local store, then update the header and msg pane
 		self.slark.view = self.slark.get_channel(new_chan_id)
+
+		t = threading.Thread(target=self.slark.update_model_view, daemon=True)
+		t.start()
+
 		new_name = self.slark.view['channel']['name']
 		new_msgs = self.build_msg_rows(self.slark.view['messages'])
 

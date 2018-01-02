@@ -68,11 +68,6 @@ class SlarkComm:
 
 	def api_call(self, method, **args):
 
-		# use rtm_payload.json instead so we don't get ratelimited, but get a new WS url :D
-		connect_only = method == 'rtm.start'
-		if method == 'rtm.start' and connect_only:
-			method = 'rtm.connect'
-
 		post_data = args or {}
 		url = 'https://slack.com/api/{0}'.format(method)
 		post_data['token'] = self.token
@@ -85,12 +80,7 @@ class SlarkComm:
 		if req.status_code != 200:
 			raise Exception(req)
 
-		reply = req.json()
-		if connect_only:
-			ws_url = reply['url']
-			reply = json.load(open('rtm_payload.json'))
-			reply['url'] = ws_url
-		return reply
+		return req.json()
 
 	def user_agent(self):
 		return "Slark/{0} Python/{v.major}.{v.minor}.{v.micro} {1}/{2}".format(VERSION,
