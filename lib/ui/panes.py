@@ -28,6 +28,8 @@ class Panes:
 		focus_position = 0
 		for c in self.slark.boot['channel_list_visible']:
 			ch_item = ChannelItem(c['name'], self.switchChannels, c['id'])
+			if c['unreads'] > 0:
+				ch_item = urwid.AttrMap(ch_item, 'unread')
 			ch_item = urwid.AttrMap(ch_item, None, focus_map='focused')
 			body = body + [urwid.Divider(), ch_item]
 			if c['id'] == self.slark.view['channel']['id']:
