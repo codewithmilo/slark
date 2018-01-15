@@ -99,7 +99,7 @@ class SlarkClient():
 		boot['channel_list'] = channel_list
 
 		# filter out archived channels and those you aren't a member of
-		channel_list_visible = filter(lambda c: c['is_member'] == True and c['is_archived'] == False, channel_list)
+		channel_list_visible = self.filter_channels(channel_list)
 
 		# now sort based on priority if the pref says so
 		if data['self']['prefs']['channel_sort'] == 'priority':
@@ -108,3 +108,10 @@ class SlarkClient():
 		boot['channel_list_visible'] = channel_list_visible
 
 		return boot
+
+	def filter_channels(self, channels):
+		out = []
+		for c in channels:
+			if c['is_member'] and not c['is_archived']:
+				out.append(c)
+		return out

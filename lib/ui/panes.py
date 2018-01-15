@@ -1,14 +1,14 @@
-import re
 import json
 import urwid
-import datetime
 import threading
 from lib.ui.msg_input import MsgInput
 from lib.ui.msg_pane import MsgPane
+from lib.ui.msg_formatter import MsgFormatter
 
 class Panes:
 	def __init__(self, slark):
 		self.slark = slark
+		self.formatter = MsgFormatter(slark)
 		self.msg = self.msg_pane()
 		self.ch = self.channel_pane()
 
@@ -30,7 +30,6 @@ class Panes:
 			ch_item = ChannelItem(c['name'], self.switchChannels, c['id'])
 			if c['unreads'] > 0:
 				ch_item = urwid.AttrMap(ch_item, 'unread')
-			ch_item = urwid.AttrMap(ch_item, None, focus_map='focused')
 			body = body + [urwid.Divider(), ch_item]
 			if c['id'] == self.slark.view['channel']['id']:
 				focus_position = len(body) - 1
@@ -73,14 +72,16 @@ class Panes:
 
 		msg_rows = []
 		for msg in messages:
-			author = self.slark.boot['user_list'][msg['user']]
-			ts = datetime.datetime.fromtimestamp(float(msg["ts"]))
-			time = ts.strftime('%H:%M')
-			text = msg.get('text', '')
-			text = re.sub('<@(U[A-Z\d]+)>', mentions_repl, text)
-			message = urwid.Text(text)
-			metadata = urwid.Text(('metadata', author+' @ '+time))
-			msg_rows = msg_rows + [urwid.Divider(), metadata, message]
+			msg_row = self.formatter.format(msg)
+			# author = self.slark.boot['user_list'][msg['user']]
+			# ts = datetime.datetime.fromtimestamp(float(msg["ts"]))
+			# time = ts.strftime('%H:%M')
+			# text = msg.get('text', '')
+			# text = re.sub('<@(U[A-Z\d]+)>', mentions_repl, text)
+			# message = urwid.Text(text)
+			# metadata = urwid.Text(('metadata', author+' @ '+time))
+			# msg_rows = msg_rows + [urwid.Divider(), metadata, message]
+			msg_rows = msg_rows + msg_row
 		return msg_rows
 
 	def setup_msg_pane_hooks(self, msg_pane):

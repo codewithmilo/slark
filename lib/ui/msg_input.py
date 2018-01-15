@@ -13,7 +13,7 @@ class MsgInput(urwid.Edit):
 		if key == 'enter':
 			# send a message
 			self.submitMsg()
-		if key == 'up' and self.get_cursor_coords((1000,))[1] == 0:
+		if key == 'up' and self.get_cursor_coords(size)[1] == 0:
 			# if we are at the top of the input, tell the frame to move focus
 			return urwid.emit_signal(self, 'move-focus', key)
 		if key == 'esc':

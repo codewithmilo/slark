@@ -45,19 +45,26 @@ class Slark:
 			store_thread = threading.Thread(target=self.store_model, daemon=True)
 			store_thread.start()
 		else:
+			if args.co:
+				# sometimes we don't need a WS
+				return
+
 			# since we have the data we need, just rtm.connect to get the WS url
 			conn = self.comm.api_call('rtm.connect')
 			self.setup_websocket(conn)
 
 
 	def setup_from_store(self):
-		# TODO make sure we look at the `latest_event_ts` to either redo rtm.start or pull from the eventlog
 		try:
 			store = open(store_path, 'rb')
 		except FileNotFoundError:
 			return False
 
-		model = pickle.load(store)
+		try:
+			model = pickle.load(store)
+		except EOFError:
+			return False
+
 		self.boot = model['boot']
 		self.view = model['view']
 		store.close()
@@ -68,7 +75,8 @@ class Slark:
 
 		self.setup_websocket(reply)
 
-		return self.client.setup_boot(reply)
+		boot = self.client.setup_boot(reply)
+		return boot
 
 	def setup_websocket(self, rtm_res):
 		if rtm_res['ok']:
@@ -155,7 +163,7 @@ class Slark:
 			'boot': self.boot,
 			'view': self.view
 		}
-
+ 
 		# create a Slark directory: in the future this will be created with install
 		if not os.path.exists(store_dir):
 			os.makedirs(store_dir)

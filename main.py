@@ -8,6 +8,11 @@ parser.add_argument(
 	action='store_true',
 	help='Open the websocket only, without a UI',
 	dest='ws')
+parser.add_argument(
+	'-c', '--client-only',
+	action='store_true',
+	help='Open the client only, without a websocket connection',
+	dest='co')
 
 args = parser.parse_args()
 

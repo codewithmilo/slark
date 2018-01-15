@@ -16,7 +16,7 @@ def load_ui(slark):
 	main = MainUI([
 		('weight', 1, main_pane.ch),
 		('weight', 3, main_pane.msg)], 1)
-	loop = urwid.MainLoop(main, palette)
+	loop = urwid.MainLoop(main, palette, handle_mouse=False)
 	urwid.connect_signal(loop.widget.contents[1][0], 'redraw-msg', loop.draw_screen)
 	loop.run()
 

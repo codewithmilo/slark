@@ -1,5 +1,8 @@
 import urwid
 
+# the full message pane, which is just a big list of messages.
+# mostly created to handle keyboard nav
+
 class MsgPane(urwid.ListBox):
 	def __init__(self, body):
 		b = urwid.SimpleFocusListWalker(body)
@@ -10,8 +13,9 @@ class MsgPane(urwid.ListBox):
 	def keypress(self, size, key):
 		if key == 'down':
 			# if we are at the bottom, tell the frame to move to msg input
-			visible = self.ends_visible(size)
-			if len(visible) and visible[0] == 'bottom':
+			# subtract 2 because the last item is just text; not a selectable
+			full_len = len(self.body) - 2
+			if self.focus_position == full_len:
 				urwid.emit_signal(self, 'move-focus', key)
 		if key == 'up':
 			# check if we are at the top of history. if we are, send the signal to add some more
