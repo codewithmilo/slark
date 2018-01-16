@@ -6,10 +6,11 @@ class SlarkClient():
 		# the Slark 'boot' property has all the shit we will need. Populate it now!
 		#
 
-		boot = data
+		boot = {}
 
-		# mapping of user_id => user name, so it's easy to display
+		# mapping of id => name, so it's easy to display
 		user_list = {}
+		bot_list = {}
 		# all the channels in one list, with minimal data
 		channel_list = []
 		# channel list without archived or non-member channels, and sorted
@@ -31,6 +32,12 @@ class SlarkClient():
 			user_list[u['id']] = name
 
 		boot['user_list'] = user_list
+
+		# bots
+		for b in data['bots']:
+			bot_list[b['id']] = b['name']
+
+		boot['bot_list'] = bot_list
 
 		# now do the channels
 		for ch in data['channels']:
