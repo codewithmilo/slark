@@ -10,7 +10,8 @@ def load_ui(slark):
 		('streak', 'white', 'black'),
 		('metadata', 'black', 'light gray'),
 		('input', 'white', 'dark gray'),
-		('unread', 'bold', '')]
+		('unread', 'bold', ''),
+		('att-title', 'underline', '')]
 
 	main_pane = Panes(slark)
 	main = MainUI([
