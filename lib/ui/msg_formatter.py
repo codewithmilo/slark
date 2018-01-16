@@ -71,7 +71,7 @@ class MsgFormatter():
 			for att in attachments:
 				div = (None, '\n|  ')
 				title_yes = len(att.get('title', '')) > 0
-				title = att.get('title', '') if title_yes else ''
+				title = att.get('title') if title_yes else ''
 				title = html.unescape(html.unescape(title)) # this is...dumb
 				w_title = ('att-title', title)
 
@@ -79,6 +79,7 @@ class MsgFormatter():
 				txt = '\n|  ' + att.get('text', att.get('fallback', '')) if txt_yes else ''
 
 				# TODO use the links and the pics
+				# links will probably be handled in the message details, though
 
 				if title_yes:
 					full_text = full_text + [div, w_title, (None, txt)]
@@ -89,18 +90,28 @@ class MsgFormatter():
 		else:
 			return urwid.Text(text)
 
+	def msg_replies_format(self, msg):
+		replies = msg.get('reply_count', None)
+		if not replies:
+			return ''
+		else:
+			word = 'replies' if replies > 1 else 'reply'
+			return '  ['+str(replies)+' '+word+']'
+
 	def format_user_msg(self, msg):
 		author = self.slark.boot['user_list'][msg['user']]
 		time = self.time_str_format(msg['ts'])
 		message = self.msg_text_format(msg)
-		metadata = MsgMeta(('metadata', author+' @ '+time))
+		replies = self.msg_replies_format(msg)
+		metadata = MsgMeta(('metadata', author+' @ '+time+replies))
 		return [urwid.Divider(), metadata, message]
 
 	def format_bot_msg(self, msg):
 		author = self.slark.boot['bot_list'][msg['bot_id']]
 		time = self.time_str_format(msg['ts'])
 		message = self.msg_text_format(msg)
-		metadata = MsgMeta(('metadata', author+' @ '+time))
+		replies = self.msg_replies_format(msg)
+		metadata = MsgMeta(('metadata', author+' @ '+time+replies))
 		return [urwid.Divider(), metadata, message]
 
 	def format_rando_msg(self, msg):
