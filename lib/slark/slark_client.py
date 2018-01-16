@@ -8,6 +8,8 @@ class SlarkClient():
 
 		boot = {}
 
+		boot['self'] = data['self']
+
 		# mapping of id => name, so it's easy to display
 		user_list = {}
 		bot_list = {}

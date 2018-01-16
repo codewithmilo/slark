@@ -139,7 +139,7 @@ class Panes:
 
 		def update_new_msg_in_view(message, author):
 			# author may come from our local model or the message object
-			ts = datetime.datetime.fromtimestamp(float(message['ts']))
+			ts = datetime.fromtimestamp(float(message['ts']))
 			time = ts.strftime('%H:%M')
 			message = urwid.Text(message['text'])
 			metadata = urwid.Text(('metadata', author+' @ '+time))
