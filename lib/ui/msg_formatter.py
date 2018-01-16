@@ -39,6 +39,18 @@ class MsgFormatter():
 			# do this until we get all the types
 			return self.format_rando_msg(msg)
 
+	def maybe_add_dateline(self, msg, prev_day, row):
+		dt = datetime.fromtimestamp(float(msg['ts']))
+		current_day = int(dt.strftime('%Y%m%d'))
+
+		# if current_day > prev_day, add a dateline
+		if current_day > prev_day:
+			text = dt.strftime('%B %d, %Y')
+			date = urwid.Text(text, align='center')
+			row[0:0] = [urwid.Divider('–', top=1), date, urwid.Divider('–')]
+
+		return current_day
+
 	# replace mentions in the code with usernames
 	def mentions_repl(self, matchob):
 			uid = matchob.group(1)

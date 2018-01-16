@@ -1,6 +1,7 @@
 import json
 import urwid
 import threading
+from datetime import datetime
 from lib.ui.msg_input import MsgInput
 from lib.ui.msg_pane import MsgPane
 from lib.ui.msg_formatter import MsgFormatter
@@ -71,16 +72,12 @@ class Panes:
 			return '@'+name
 
 		msg_rows = []
+		day = int(datetime.fromtimestamp(0.00).strftime('%Y%m%d'))
 		for msg in messages:
 			msg_row = self.formatter.format(msg)
-			# author = self.slark.boot['user_list'][msg['user']]
-			# ts = datetime.datetime.fromtimestamp(float(msg["ts"]))
-			# time = ts.strftime('%H:%M')
-			# text = msg.get('text', '')
-			# text = re.sub('<@(U[A-Z\d]+)>', mentions_repl, text)
-			# message = urwid.Text(text)
-			# metadata = urwid.Text(('metadata', author+' @ '+time))
-			# msg_rows = msg_rows + [urwid.Divider(), metadata, message]
+			# TODO connect button onclick with the msg.ts and make a convo.replies call
+			# then MSG DEETS YOOOOOO
+			day = self.formatter.maybe_add_dateline(msg, day, msg_row)
 			msg_rows = msg_rows + msg_row
 		return msg_rows
 

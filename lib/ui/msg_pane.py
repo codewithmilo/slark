@@ -14,8 +14,10 @@ class MsgPane(urwid.ListBox):
 		if key == 'down':
 			# if we are at the bottom, tell the frame to move to msg input
 			# subtract 2 because the last item is just text; not a selectable
+			visible = self.ends_visible(size)
+
 			full_len = len(self.body) - 2
-			if self.focus_position == full_len:
+			if self.focus_position == full_len and len(visible) and visible[0] == 'bottom':
 				urwid.emit_signal(self, 'move-focus', key)
 		if key == 'up':
 			# check if we are at the top of history. if we are, send the signal to add some more
