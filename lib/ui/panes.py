@@ -73,12 +73,18 @@ class Panes:
 
 		msg_rows = []
 		day = int(datetime.fromtimestamp(0.00).strftime('%Y%m%d'))
+		last_read = float(self.slark.view['channel']['last_read'])
+		has_shown_read_mark = False
+
 		for msg in messages:
 			msg_row = self.formatter.format(msg)
+			day = self.formatter.maybe_add_dateline(msg, day, msg_row)
+			has_shown_read_mark = self.formatter.maybe_add_read_marker(msg, last_read, msg_row, has_shown_read_mark)
+			msg_rows = msg_rows + msg_row
+
 			# TODO connect button onclick with the msg.ts and make a convo.replies call
 			# then MSG DEETS YOOOOOO
-			day = self.formatter.maybe_add_dateline(msg, day, msg_row)
-			msg_rows = msg_rows + msg_row
+
 		return msg_rows
 
 	def setup_msg_pane_hooks(self, msg_pane):
