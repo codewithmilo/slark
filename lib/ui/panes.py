@@ -79,7 +79,11 @@ class Panes:
 		for msg in messages:
 			msg_row = self.formatter.format(msg)
 			day = self.formatter.maybe_add_dateline(msg, day, msg_row)
-			has_shown_read_mark = self.formatter.maybe_add_read_marker(msg, last_read, msg_row, has_shown_read_mark)
+			if not has_shown_read_mark:
+				did_add_read_mark = self.formatter.maybe_add_read_marker(msg, last_read, msg_row)
+			if did_add_read_mark:
+				has_shown_read_mark = True
+
 			msg_rows = msg_rows + msg_row
 
 			# TODO connect button onclick with the msg.ts and make a convo.replies call

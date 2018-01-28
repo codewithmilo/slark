@@ -51,9 +51,9 @@ class MsgFormatter():
 
 		return current_day
 
-	def maybe_add_read_marker(self, msg, last_read, row, has_shown_read_mark):
+	def maybe_add_read_marker(self, msg, last_read, row):
 		ts = float(msg['ts'])
-		if ts > last_read and not has_shown_read_mark:
+		if ts > last_read:
 			div = urwid.Columns([
 				urwid.Divider('-'),
 				urwid.Divider('-'),
@@ -65,6 +65,7 @@ class MsgFormatter():
 			])
 			row[0:0] = [urwid.Divider(), div, urwid.Divider()]
 			return True
+
 		return False
 
 	# replace mentions in the code with usernames
