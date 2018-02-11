@@ -11,6 +11,7 @@ class Panes:
 		self.slark = slark
 		self.formatter = MsgFormatter(slark)
 		self.msg = self.msg_pane()
+		self.debug_flag = False
 		self.ch = self.channel_pane()
 
 		# if we just sent a message. used for catching the WS message coming back
@@ -27,6 +28,7 @@ class Panes:
 		body = []
 		# find the channel in view and get its position in this list
 		focus_position = 0
+
 		for c in self.slark.boot['channel_list_visible']:
 			ch_item = ChannelItem(c['name'], self.switchChannels, c['id'])
 			if c['unreads'] > 0:
@@ -86,8 +88,8 @@ class Panes:
 
 			msg_rows = msg_rows + msg_row
 
-			# TODO connect button onclick with the msg.ts and make a convo.replies call
-			# then MSG DEETS YOOOOOO
+		# TODO connect button onclick with the msg.ts and make a convo.replies call
+		# then MSG DEETS YOOOOOO
 
 		return msg_rows
 
@@ -95,6 +97,7 @@ class Panes:
 		urwid.connect_signal(msg_pane, 'move-focus', self.navigate)
 		urwid.connect_signal(msg_pane, 'focus-and-type', self.navigateAndType)
 		urwid.connect_signal(msg_pane, 'more-history', self.fetchMoreHistory)
+		urwid.connect_signal(msg_pane, 'mark-read', self.slark.mark_read)
 
 	def switchChannels(self, button, new_chan_id):
 		# update slark.view, kick off a thread to update the local store, then update the header and msg pane
@@ -115,6 +118,11 @@ class Panes:
 		self.msg.contents['body'] = (msg_pane, None)
 		self.msg.contents['body'][0].set_focus(len(new_msgs)-1)
 		self.msg.set_focus('body')
+
+	def rebuildChannels(self):
+
+		pane = self.channel_pane().contents['body']
+		self.ch.contents['body'] = pane
 
 	def build(self):
 		return (self.ch, self.msg)
@@ -174,6 +182,24 @@ class Panes:
 				else:
 					author = user_id
 				update_new_msg_in_view(message, author)
+
+		# got a message about a channel being marked.
+		# update the model, redraw messages in main view, and update in channel pane
+		if msg_type in ['channel_marked', 'group_marked', 'im_marked']:
+			channel = self.slark.get_channel_by_id(message.get('channel'))
+			channel['last_read'] = message.get('ts')
+			channel['unreads'] = message.get('unread_count')
+
+			self.slark.update_channel(channel['id'], 'last_read', channel['last_read'])
+			self.slark.update_channel(channel['id'], 'unreads', channel['unreads'])
+			self.slark.view['channel'] = channel
+
+			# if we marked, update the current channel view. if the mark
+			# came from a different client, just update the channel pane
+			if self.slark.view['channel']['id'] == channel['id']:
+				self.switchChannels(None, channel['id'])
+			self.rebuildChannels()
+
 
 		# tell the main ui to redraw!
 		urwid.emit_signal(self.msg, 'redraw-msg')

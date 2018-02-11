@@ -113,9 +113,21 @@ class Slark:
 
 		return view
 
+	def update_channel(self, ch_id, key, value):
+		# update a given channel's stuff
+		for x in range(0,len(self.boot['channel_list_visible'])):
+			if ch_id == self.boot['channel_list_visible'][x]['id']:
+				self.boot['channel_list_visible'][x][key] = value
+				return True
+		return False
+
 	def update_view_history(self):
 		# this gets history for the channel currently in view, so we don't need any args
+		#
 		# TODO just setup self.view in get_channel and call this
+		# TODO #2 have a limit to the messages we have (like 50) and start dropping some when
+		#    we fetch older ones. Gonna be annoying because turns out the "cursor" only works
+		#    for going back in history.
 
 		channel = self.view['channel']['id']
 		limit = self.MSG_HISTORY_LIMIT
@@ -156,6 +168,11 @@ class Slark:
 		}
 		self.comm.send_message(json.dumps(msg))
 		# TODO update read marker for that channel
+
+	def mark_read(self):
+		channel = self.view['channel']['id']
+		ts = self.view['channel']['latest']
+		self.comm.api_call('conversations.mark', channel=channel, ts=ts)
 
 	def store_model(self):
 		# build our local model: rtm data (boot), current view (view) and api token (api_token)
@@ -200,5 +217,3 @@ class Slark:
 
 		except IOError:
 			raise Exception('updating model failed :(')
-
-

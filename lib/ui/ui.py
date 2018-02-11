@@ -27,7 +27,4 @@ class MainUI(urwid.Columns):
 			self.set_focus_column(0)
 		if key == 'esc':
 			raise urwid.ExitMainLoop()
-		if key == 'q':
-			print(self.focus, self.focus.focus)
-			return
 		super(MainUI, self).keypress(size, key)
